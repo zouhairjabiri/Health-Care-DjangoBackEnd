@@ -1,5 +1,6 @@
 from django.db import models
 from multiselectfield import MultiSelectField
+from django.contrib.auth.models import User
 
 ##############  CHOICES  ####################
 
@@ -20,7 +21,6 @@ NIVEAU_ETUDE_CHOICES = (
     ("Collège", "Collège"),
     ("Bac +1 ou +2 ", "Bac +1 ou +2"),
     ("Bac +3 ou +4", "Bac +3 ou +4"),
-    ("Bac +5 et plus", "Bac +5 et plus"),
     ("Bac +5 et plus", "Bac +5 et plus"),
     ("Non scolarisé", "Non scolarisé"),
     ("Ecole coranique", "Ecole coranique"),
@@ -78,7 +78,7 @@ Symptomes_CHOICES = (
     ("Vomissements", "Vomissements"),
     ("Symptomatologie", "Symptomatologie"),
     ("psychiatrique", "psychiatrique"),
-    ("Autres, précisez", "Autres, précisez"),
+    ("Autres Symptomes", "Autres Symptomes"),
 )
 
 ContactPersonne_CHOICES = (
@@ -93,6 +93,15 @@ ClassificationSymptomatologique_CHOICES = (
     ("Symptomatologie clinique de l’infection respiratoire haute (rhinite, pharyngite …)", "Symptomatologie clinique de l’infection respiratoire haute (rhinite, pharyngite …)"),
     ("Symptomatologie clinique de l’infection respiratoire basse (symptômes de pneumonie ou de bronchite…)", "Symptomatologie clinique de l’infection respiratoire basse (symptômes de pneumonie ou de bronchite…)"),
 )
+ 
+HistoireMaladie_CHOICES = (
+    ("Premiers symptômes", "Premiers symptômes"),
+    ("La 1ère consultation", "La 1ère consultation"),
+    ("La 1ère hospitalisation", "La 1ère hospitalisation"),
+    ("Premier diagnostic", "Premier diagnostic"),
+    ("Début de traitement ", "Début de traitement "),
+)
+
 
 ##############  class Medicaments  ####################
 class Medicaments(models.Model):
@@ -104,17 +113,6 @@ class Medicaments(models.Model):
 
     def __str__(self):
         return self.NomMedicament
-
-##############  class HistoireMaladie  ####################
-class HistoireMaladie(models.Model):
-    NomMaladie = models.CharField(max_length=40)
-
-    class Meta:
-        verbose_name = "Histoire Maladie"
-        verbose_name_plural = "Histoires Maladies"
-
-    def __str__(self):
-        return self.NomMaladie
 
 ##############  class Hopital  ####################
 class Hopital(models.Model):
@@ -136,24 +134,28 @@ class Comorbidite(models.Model):
 
 
 
+############## 2  class utilisateur  ####################
+class utilisateurPatient(User):
+
+    def __str__(self):
+        return self.last_name.upper() +' '+ self.first_name.lower()
+
+class utilisateurDoctor(User):
+
+    def __str__(self):
+        return self.last_name.upper() +' '+ self.first_name.lower()
 
 ##############  class Doctor  ####################
 class Doctor(models.Model):
-    Nom = models.CharField(max_length=40)
-    Prenom = models.CharField(max_length=40)
     Hopital = models.ForeignKey(Hopital, on_delete=models.CASCADE)
-    Email = models.EmailField()
-    Password = models.CharField(max_length=40)
+    utilisateur = models.OneToOneField(utilisateurDoctor,on_delete=models.CASCADE)
 
     def __str__(self):
-        return 'Dr.'+self.Nom
+        return 'Dr.'+ self.username
 
 ##############  class Patient  ####################
 class Patient(models.Model):
-    Nom = models.CharField(max_length=40)
-    Email = models.EmailField()
-    Password = models.CharField(max_length=40)
-    Prenom = models.CharField(max_length=40)
+    utilisateur = models.OneToOneField(utilisateurPatient,on_delete=models.CASCADE)
     DateDeNaissance = models.DateField()
     Sexe = models.CharField(max_length=10, choices=SEXE_CHOICES)
     Statutmatrimonial = models.CharField(max_length=50, choices=STATUS_CHOICES)
@@ -169,10 +171,10 @@ class Patient(models.Model):
     Taille = models.FloatField()
     VaccinationBCG = models.BooleanField()
     TabagismeActif = models.CharField(max_length=30, choices=TabagismeActif_CHOICES)
-    DureeDeConsommation = models.IntegerField()
+    DureeDeConsommation = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.Nom
+        return self.username
 
 
 ##############  class ComorbiditePersonnel  ####################
@@ -184,15 +186,19 @@ class ComorbiditePersonnel(models.Model):
     AutresMaladies = models.CharField(max_length=90,blank=True)
 
     def __str__(self):
-        return self.Comorbidite.NomAntecedent
+        return self.Patient.Nom
 
 ##############  class HistoireMaladiePersonnel  ####################
 class HistoireMaladiePersonnel(models.Model):
     Patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    HistoireMaladie = models.ForeignKey(HistoireMaladie, on_delete=models.CASCADE)
+    HistoireMaladie = models.CharField(max_length=40, choices=HistoireMaladie_CHOICES)
     Date = models.DateField()
     Specification = models.CharField(max_length=80)
+    
+    def __str__(self):
+        return self.Patient.Nom
 
+        
 ##############  class The National Early Warning Score (NEWS) ####################
 class NEWS(models.Model):
     Age = models.FloatField()
@@ -203,7 +209,7 @@ class NEWS(models.Model):
     FréquenceCardiaque = models.FloatField()
     Température = models.FloatField()
     NiveauDeConscience = models.FloatField()
-    Patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    Patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.Patient.Nom
@@ -212,8 +218,8 @@ class NEWS(models.Model):
 ##############  class ContactAvecUnCas  ####################
 class ContactAvecUnCas(models.Model):
     ContactConfirme = models.BooleanField()
-    ContactPersonne = models.CharField(max_length=40, choices=ContactPersonne_CHOICES)
-    AutreContact = models.CharField(max_length=40)
+    ContactPersonne = models.CharField(max_length=40, choices=ContactPersonne_CHOICES,blank=True)
+    AutreContact = models.CharField(max_length=40,blank=True)
     SourceInconnue = models.BooleanField()
     Patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
 
@@ -225,8 +231,8 @@ class ContactAvecUnCas(models.Model):
 ##############  class ZoneExposition  ####################
 class ZoneExposition(models.Model):
     expose = models.BooleanField()
-    Zone = models.CharField(max_length=40)
-    DateExposition = models.DateField()
+    Zone = models.CharField(max_length=40,blank=True)
+    DateExposition = models.DateField(blank=True)
     Patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -235,8 +241,8 @@ class ZoneExposition(models.Model):
 
 ##############  class Enceinte  ####################
 class Enceinte(models.Model):
-    Grossesse = models.BooleanField()
-    NbSemaineamenorrhee = models.IntegerField()
+    Grossesse = models.BooleanField(blank=True)
+    NbSemaineamenorrhee = models.IntegerField(blank=True)
     Patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -246,15 +252,15 @@ class Enceinte(models.Model):
 ##############  class StatutClinique  ####################
 class StatutClinique(models.Model):
     NomSymptome = MultiSelectField(choices=Symptomes_CHOICES)
+    AutresSymptomes = models.CharField(max_length=80,blank=True)
     ConclusionExamenClinique = models.CharField(max_length=90)
-    ConclusionExamenRadiologique = models.CharField(max_length=40, choices=(("Normale", "Normale"), ("Verre dépoli ", "Verre dépoli ")))
-    AutresLesions = models.CharField(max_length=80)
+    ConclusionExamenRadiologique = models.CharField(max_length=40, choices=(("Normale", "Normale"), ("Verre dépoli", " Verre dépoli"), ("Autres Lesions", "Autres Lesions"),))
+    AutresLesions = models.CharField(max_length=80,blank=True)
     ClassificationSymptomatologique = models.CharField(max_length=100,choices=ClassificationSymptomatologique_CHOICES)
     Patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
-    AutresSymptomes = models.CharField(max_length=80)
 
     def __str__(self):
-        return self.NomSymptome
+        return self.Patient.Nom
 
 ##############  class UtilisationDesMedicaments  ####################
 class UtilisationDesMedicaments(models.Model):

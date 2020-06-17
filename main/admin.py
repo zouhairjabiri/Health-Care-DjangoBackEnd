@@ -2,18 +2,18 @@ from django.contrib import admin
 from .models import *
 from .forms import PatientForm
 
-admin.site.site_header = "WIKAYTNA Administration"
-admin.site.site_title = "WIKAYTNA Administration Portal"
-admin.site.index_title = "Bienvenue Dans WIKAYTNA Portal"
+admin.site.site_header = "Télé Covid Administration"
+admin.site.site_title = "Télé Covid Administration Portal"
+admin.site.index_title = "Bienvenue Dans Télé Covid Portal"
 
 
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('Hopital', 'Doctor')
-    search_fields = ('Nom', 'Prenom')
+    search_fields = ('utilisateur',)
     list_filter = ('Hopital',)
     fieldsets = (
         ('Informations general', {
-            'fields': ('Nom', 'Prenom', 'Email')
+            'fields': ('utilisateur', 'Email')
         }),
         ('Hopital ', {
             'fields': ('Hopital',)
@@ -76,8 +76,8 @@ class DevenirDuPatientInline(admin.StackedInline):
 
 
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ('Nom', 'Sexe', 'devenir')
-    search_fields = ('Nom', 'Prenom', 'Email', )
+    list_display = ('utilisateur', 'Sexe', 'devenir')
+    search_fields = ('utilisateur', 'Prenom', 'Email', )
     list_filter = ('Sexe',)
     inlines = [
         UtilisationDesMedicamentsInline,
@@ -92,8 +92,7 @@ class PatientAdmin(admin.ModelAdmin):
     ]
     fieldsets = (
         ('Informations general', {
-            'fields': ('Nom', 'Prenom', 'Email', 'DateDeNaissance',
-                       'Sexe', 'NombreEnfants', 'NiveauEtude', 'RevenumMensuel',)
+            'fields': ( 'DateDeNaissance','Sexe', 'NombreEnfants', 'NiveauEtude', 'RevenumMensuel',)
         }),
         ('Activite', {
             'fields': ('Activite',),
@@ -103,10 +102,10 @@ class PatientAdmin(admin.ModelAdmin):
             'fields': ('AutreActivite',),
             'classes': ('abcdefg',)
         }),
-        ('Adress ', {
+        ('Adresse', {
             'fields': ('Quartier', 'Ville', 'MilieuDeResidence',)
         }),
-        ('mesure physique ', {
+        ('Mesure Physique ', {
             'fields': ('Poids', 'Taille',)
         }),
         ('Vaccination BCG (surtout pour les enfants) ', {
