@@ -159,19 +159,19 @@ class Patient(models.Model):
     DateDeNaissance = models.DateField()
     Sexe = models.CharField(max_length=10, choices=SEXE_CHOICES)
     Statutmatrimonial = models.CharField(max_length=50, choices=STATUS_CHOICES)
+    AutreStatutmatrimonial = models.CharField(max_length=50, blank=True)
     NombreEnfants = models.IntegerField(default=0)
     RevenumMensuel = models.CharField(max_length=40, choices=Revenu_CHOICES)
     NiveauEtude = models.CharField(max_length=40, choices=NIVEAU_ETUDE_CHOICES)
     Activite = models.CharField(max_length=100, choices=Activite_CHOICES, default=Activite_CHOICES[0][0])
     AutreActivite = models.CharField(max_length=100, blank=True)
+    ActiviteSiActive = models.CharField(max_length=100, blank=True)
     Quartier = models.CharField(max_length=50)
     Ville = models.CharField(max_length=40)
     MilieuDeResidence = models.CharField(max_length=10, choices=Milieu_de_residence_CHOICES)
     Poids = models.FloatField()
     Taille = models.FloatField()
-    VaccinationBCG = models.BooleanField()
-    TabagismeActif = models.CharField(max_length=30, choices=TabagismeActif_CHOICES)
-    DureeDeConsommation = models.IntegerField(default=0)
+
 
     def __str__(self):
         return self.username
@@ -184,6 +184,9 @@ class ComorbiditePersonnel(models.Model):
     AgeAuDiagnostic = models.IntegerField(blank=True)
     PriseDeTraitement = models.BooleanField(blank=True)
     AutresMaladies = models.CharField(max_length=90,blank=True)
+    VaccinationBCG = models.BooleanField()
+    TabagismeActif = models.CharField(max_length=30, choices=TabagismeActif_CHOICES)
+    DureeDeConsommation = models.IntegerField(default=0)
 
     def __str__(self):
         return self.Patient.Nom

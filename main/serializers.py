@@ -1,5 +1,35 @@
-from  .models import *
+from .models import *
 from rest_framework import serializers
+from django.contrib.auth.models import User
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
+
+class UserDocSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = utilisateurDoctor
+        fields = ['id', 'first_name', 'last_name', 'username', 'password']
+        required_fields = fields
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+                'required': True
+            },
+        }
+
+class UserPatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = utilisateurPatient
+        fields = ['id', 'first_name', 'last_name', 'username', 'password']
+        required_fields = fields
+        extra_kwargs = {
+            'password': {
+                'write_only': True,
+                'required': True
+            },
+        }
+
 
 class MedicamentsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +56,10 @@ class PatientSerializer(serializers.ModelSerializer):
         model = Patient
         fields = '__all__'  
 
+    def to_representation(self, instance):
+        self.fields['utilisateur'] = UserPatSerializer(read_only=True)
+        return super(PatientSerializer, self).to_representation(instance) 
+
 class ComorbiditePersonnelSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComorbiditePersonnel
@@ -37,16 +71,7 @@ class HistoireMaladiePersonnelSerializer(serializers.ModelSerializer):
         model = HistoireMaladiePersonnel
         fields = '__all__'
 
-class utilisateurPatientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = utilisateurPatient
-        fields = ['id', 'first_name', 'last_name', 'username', 'password']
-
-class utilisateurDoctorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = utilisateurDoctor
-        fields = ['id', 'first_name', 'last_name', 'username', 'password']
-        
+     
 class NEWSSerializer(serializers.ModelSerializer):
     class Meta:
         model = NEWS
@@ -82,3 +107,7 @@ class DevenirDuPatientSerializer(serializers.ModelSerializer):
     class Meta:
         model = DevenirDuPatient
         fields = '__all__'  
+
+
+
+

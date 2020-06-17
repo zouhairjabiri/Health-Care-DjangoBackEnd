@@ -18,8 +18,8 @@ router.register('Enceinte',views.EnceinteViewSet)
 router.register('StatutClinique',views.StatutCliniqueViewSet)
 router.register('UtilisationDesMedicaments',views.UtilisationDesMedicamentsViewSet)
 router.register('DevenirDuPatient',views.DevenirDuPatientViewSet)
-router.register('utilisateurDoctor',views.utilisateurDoctorViewSet)
-router.register('utilisateurPatient',views.utilisateurPatientViewSet)
+router.register('UserPatient', views.UserPatViewSet)
+router.register('UserDoctor', views.UserDocViewSet)
 
 
 # Wire up our API using automatic URL routing.

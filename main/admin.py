@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import *
-from .forms import PatientForm
 
 admin.site.site_header = "Télé Covid Administration"
 admin.site.site_title = "Télé Covid Administration Portal"
@@ -108,15 +107,8 @@ class PatientAdmin(admin.ModelAdmin):
         ('Mesure Physique ', {
             'fields': ('Poids', 'Taille',)
         }),
-        ('Vaccination BCG (surtout pour les enfants) ', {
-            'fields': ('VaccinationBCG',)
-        }),
-        ('Tabagisme actif : ', {
-            'fields': ('TabagismeActif', 'DureeDeConsommation')
-        }),
-    )
-    form = PatientForm
 
+    )
     def devenir(self, obj):
         devenir = DevenirDuPatient.objects.get(Patient=obj)
         return devenir
